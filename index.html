@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Flow Sand</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="top-bar">
+        <div class="status-dot"></div>
+        <span class="app-title">Flow Sand</span>
+      </header>
+
+      <main class="canvas-shell">
+        <canvas id="sand-canvas"></canvas>
+
+        <div id="onboarding-hint" class="onboarding-card">
+          <div class="onboarding-icon">☝️</div>
+          <div class="onboarding-text">Drag to pour</div>
+        </div>
+      </main>
+
+      <section class="toolbar">
+        <div class="color-strip" id="color-strip">
+          <button class="color-swatch rainbow active" data-mode="rainbow"></button>
+          <button class="color-swatch" style="--swatch:#ff4b4b" data-color="#ff4b4b"></button>
+          <button class="color-swatch" style="--swatch:#ff9f1c" data-color="#ff9f1c"></button>
+          <button class="color-swatch" style="--swatch:#ffe066" data-color="#ffe066"></button>
+          <button class="color-swatch" style="--swatch:#2ecc71" data-color="#2ecc71"></button>
+          <button class="color-swatch" style="--swatch:#339af0" data-color="#339af0"></button>
+          <button class="color-swatch" style="--swatch:#a855f7" data-color="#a855f7"></button>
+          <button class="color-swatch" style="--swatch:#ff6bcb" data-color="#ff6bcb"></button>
+        </div>
+
+        <div class="mode-strip">
+          <button class="mode-btn active" data-mode="sand">Sand</button>
+          <button class="mode-btn" data-mode="icons" disabled>Icons</button>
+          <button class="mode-btn" data-mode="text" disabled>Text</button>
+          <button class="mode-btn danger" id="clear-btn">Clear</button>
+          <button class="mode-btn" id="share-btn">Share</button>
+        </div>
+      </section>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
+
