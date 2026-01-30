@@ -4,14 +4,25 @@ const canvas = document.getElementById("sand-canvas");
 const ctx = canvas.getContext("2d");
 
 // Logical grid resolution. We keep this modest for performance.
-const GRID_WIDTH = 160;
-const GRID_HEIGHT = 260;
+// On smaller / mobile viewports we reduce the resolution further to
+// keep the simulation and rendering smooth.
+let GRID_WIDTH = 160;
+let GRID_HEIGHT = 260;
+
+if (window.innerWidth < 480 || window.innerHeight < 700) {
+  GRID_WIDTH = 120;
+  GRID_HEIGHT = 200;
+}
 
 // Each cell is either null or an object with { r, g, b }.
 let grid = createEmptyGrid();
 
 // Rendering sizes (computed from canvas size).
 let cellSize = 2;
+let canvasLeft = 0;
+let canvasTop = 0;
+let canvasWidth = 0;
+let canvasHeight = 0;
 
 // Interaction state.
 let isPointerDown = false;
@@ -34,13 +45,18 @@ function createEmptyGrid() {
 
 function resizeCanvas() {
   const rect = canvas.getBoundingClientRect();
-  canvas.width = Math.floor(rect.width * window.devicePixelRatio);
-  canvas.height = Math.floor(rect.height * window.devicePixelRatio);
+  canvasLeft = rect.left;
+  canvasTop = rect.top;
+  canvasWidth = rect.width;
+  canvasHeight = rect.height;
+
+  canvas.width = Math.floor(canvasWidth * window.devicePixelRatio);
+  canvas.height = Math.floor(canvasHeight * window.devicePixelRatio);
   ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
 
   cellSize = Math.min(
-    rect.width / GRID_WIDTH,
-    rect.height / GRID_HEIGHT
+    canvasWidth / GRID_WIDTH,
+    canvasHeight / GRID_HEIGHT
   );
 }
 
@@ -54,9 +70,8 @@ function inBounds(x, y) {
 
 // Spawn a small brush of particles around pointer.
 function spawnSandAtCanvasPos(x, y) {
-  const rect = canvas.getBoundingClientRect();
-  const gx = Math.floor(((x - rect.left) / rect.width) * GRID_WIDTH);
-  const gy = Math.floor(((y - rect.top) / rect.height) * GRID_HEIGHT);
+  const gx = Math.floor(((x - canvasLeft) / canvasWidth) * GRID_WIDTH);
+  const gy = Math.floor(((y - canvasTop) / canvasHeight) * GRID_HEIGHT);
 
   const radius = 2;
   for (let oy = -radius; oy <= radius; oy++) {
@@ -80,9 +95,8 @@ function spawnSandAtCanvasPos(x, y) {
 
 // Erase sand in a small brush around pointer (shovel / eraser).
 function eraseSandAtCanvasPos(x, y) {
-  const rect = canvas.getBoundingClientRect();
-  const gx = Math.floor(((x - rect.left) / rect.width) * GRID_WIDTH);
-  const gy = Math.floor(((y - rect.top) / rect.height) * GRID_HEIGHT);
+  const gx = Math.floor(((x - canvasLeft) / canvasWidth) * GRID_WIDTH);
+  const gy = Math.floor(((y - canvasTop) / canvasHeight) * GRID_HEIGHT);
 
   const radius = 3;
   for (let oy = -radius; oy <= radius; oy++) {
@@ -201,7 +215,8 @@ function stepSimulation() {
 
 function drawGrid() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const rect = canvas.getBoundingClientRect();
+  const width = canvasWidth;
+  const height = canvasHeight;
 
   for (let y = 0; y < GRID_HEIGHT; y++) {
     for (let x = 0; x < GRID_WIDTH; x++) {
@@ -209,8 +224,8 @@ function drawGrid() {
       if (!cell) continue;
       ctx.fillStyle = `rgb(${cell.r},${cell.g},${cell.b})`;
       ctx.fillRect(
-        (x / GRID_WIDTH) * rect.width,
-        (y / GRID_HEIGHT) * rect.height,
+        (x / GRID_WIDTH) * width,
+        (y / GRID_HEIGHT) * height,
         cellSize + 0.5,
         cellSize + 0.5
       );
@@ -226,8 +241,13 @@ function loop() {
       eraseSandAtCanvasPos(pointerX, pointerY);
     }
   }
+
+  // Run multiple physics steps per frame so grains fall faster and
+  // feel closer to real gravity instead of slow motion.
+  stepSimulation();
   stepSimulation();
   drawGrid();
+
   requestAnimationFrame(loop);
 }
 
